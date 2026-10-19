@@ -1,0 +1,20 @@
+KL Beauty Render 1.1 — validação de 19/10/2026
+
+npm run build: APROVADO (TypeScript + Vite)
+npm test: 69 testes aprovados, 0 falhas.
+
+Inclui:
+- 43 testes de domínio: agenda, recebimentos, comissões, estoque, pacotes e permissões.
+- Segurança de senhas, cookies e origem.
+- HTTP real em servidor Node local com motor PostgreSQL PGlite.
+- Login, expiração/invalidação de sessão, equipe, contas, isolamento multiempresa.
+- Conflito otimista de gravação e persistência JSONB.
+- Proteção de arquivos internos, frontend compilado e cabeçalhos.
+- Inicialização do esquema e preservação da senha administrativa após reinicialização.
+
+Limites da verificação:
+- PGlite usa motor PostgreSQL embarcado; conexão TCP/TLS com PostgreSQL externo não foi testada.
+- Nenhum deploy foi executado na conta Render.
+- Dockerfile não executado.
+- Não houve validação visual/end-to-end em navegador.
+- Aprovação dos testes não garante ausência de bugs nem constitui auditoria externa.
