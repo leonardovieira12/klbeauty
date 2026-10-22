@@ -38,7 +38,7 @@ Se a busca encontrar vários produtos, escolha na lista. Nenhum deles é lançad
 
 Produtos em KG aceitam até três casas decimais: resolução de 1 grama. Não é permitida fração de unidade, caixa ou pacote. Preço e custo são sempre por unidade cadastrada, portanto em KG informe o preço de **um quilo**. Os totais monetários são arredondados para centavos por item.
 
-A unidade não pode mudar em um produto que tenha estoque, movimentações históricas ou esteja no carrinho. Crie outro produto com a unidade correta; isso evita reinterpretar vendas e estoque antigos.
+A unidade pode mudar em produtos com estoque e histórico. Ao editar, selecione a nova unidade, informe o saldo real nela, confira preço e custo, preencha o motivo e marque a confirmação. Vendas antigas mantêm sua unidade, quantidade e valores. Se houver o produto na sacola ainda aberta, remova-o antes de trocar a unidade.
 
 ## Ler com a câmera do celular
 
@@ -58,7 +58,7 @@ Cancelar a leitura ou negar permissão não descarta o cadastro. A leitura no ca
 
 ## Estoque, entradas e cancelamento
 
-Ajustes, perdas, notas de entrada e cancelamentos de venda respeitam a unidade. O cancelamento repõe a quantidade vendida, incluindo frações de kg. Comprovantes e exportações de vendas exibem a unidade.
+Ajustes, perdas, notas de entrada e cancelamentos de venda respeitam a unidade. O cancelamento repõe a quantidade vendida quando a unidade não mudou. Se houve troca de unidade depois da venda, pede a quantidade física devolvida na unidade atual, inclusive quando a unidade mudou e depois voltou à original. Comprovantes e exportações de vendas exibem a unidade.
 
 Na entrada de NF, quantidade e custo devem estar na unidade cadastrada. Se o XML informar unidade diferente, a gravação é impedida: faça a entrada manual com a conversão conferida. Não há conversão automática de caixa para unidade ou de gramas para kg no XML.
 

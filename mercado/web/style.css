@@ -7,3 +7,5 @@
 .login-mode #sidebar,.login-mode header,.login-mode footer{display:none}.login-mode .workspace{margin:0}.login-mode main{min-height:100vh;display:grid;place-items:center}.cloud-login{width:min(430px,94vw);padding:32px}.cloud-login label{margin:20px 0}.cloud-login input{font-size:16px}#loginError{color:#c8495e;margin-bottom:16px}
 
 .scan-results{display:grid;gap:6px;margin:8px 0}.scan-results:empty{display:none}.scan-results button{display:flex;justify-content:space-between;gap:12px;text-align:left;padding:12px;white-space:normal}.scan-results span{font-size:12px}#cameraVideo{width:100%;max-height:55vh;object-fit:contain;background:#101820;border-radius:10px}#cameraStatus{line-height:1.5;padding:12px 0}.mobile-pdv-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.cart-item input{min-width:70px}
+
+.category-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px} [hidden]{display:none!important} #pUnitConfirmWrap{margin:14px 0} #pUnitConfirmWrap input{width:auto} .toolbar label{min-width:180px}

@@ -1,4 +1,4 @@
-# KL Portal 2.3
+# KL Portal 2.4
 
 KL Beauty, KLSistemas e Superadmin em um Web Service Docker.
 
@@ -16,3 +16,5 @@ O banco mantém os registros; a migração adiciona controles sem apagar os dado
 Consulte **VALIDACAO.md** para testes, comandos de reprodução e limites.
 
 Atualização do mercado: veja `MERCADO_PESO_CAMERA.md` para cadastro de atalhos, venda por peso e câmera. Não há novas variáveis de ambiente.
+
+Correção de estoque e categorias: veja `ATUALIZACAO_ESTOQUE_2.5.md`. A versão exibida no mercado deve ser **2.5.0** após publicar.
