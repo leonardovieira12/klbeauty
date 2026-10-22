@@ -1,7 +1,18 @@
-# KL Portal Render
+# KL Portal 2.3
 
-Um Web Service Docker, com KL Beauty em `/beauty/`, KLSistemas em `/mercado/` e seleção de sistema em `/`.
+KL Beauty, KLSistemas e Superadmin em um Web Service Docker.
 
-Comece por **LEIA_PRIMEIRO_RENDER.md**: contém os passos de publicação, variáveis e comandos. Consulte **VALIDACAO.md** antes de usar dados reais.
+- `/`: seleção de sistema
+- `/beauty/`: gestão do salão
+- `/mercado/`: gestão comercial
+- `/admin/`: empresas, usuários, contratos, mensalidades e exclusão/restauração de cadastros
 
-O PostgreSQL é separado do serviço web. Nenhuma credencial real acompanha os arquivos. A publicação e a migração de dados anteriores não foram executadas nesta entrega.
+Para atualizar a instalação existente, siga **ATUALIZAR_PARA_V2.md**. Não crie outro PostgreSQL e não substitua sua DATABASE_URL durante essa atualização.
+
+Novas variáveis: `SUPERADMIN_EMAIL` e `SUPERADMIN_PASSWORD` (12–200 caracteres). A conta é criada somente no primeiro início da v2.
+
+O banco mantém os registros; a migração adiciona controles sem apagar os dados existentes. Pagamentos são registrados manualmente. Instalações antigas conectadas ao mesmo banco precisam ser desativadas ou atualizadas para não contornar os bloqueios.
+
+Consulte **VALIDACAO.md** para testes, comandos de reprodução e limites.
+
+Atualização do mercado: veja `MERCADO_PESO_CAMERA.md` para cadastro de atalhos, venda por peso e câmera. Não há novas variáveis de ambiente.

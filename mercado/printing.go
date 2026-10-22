@@ -15,7 +15,7 @@ import (
 )
 
 type receiptItem struct {
-	Name       string
+	Name, Unit string
 	Qty, Price float64
 }
 type receiptSale struct {
@@ -95,7 +95,7 @@ func receiptLines(s receiptSale, c receiptSettings) []string {
 	add(strings.Repeat("-", width))
 	for _, i := range s.Items {
 		add(i.Name)
-		add(fmt.Sprintf("%g x %s = %s", i.Qty, receiptMoney(i.Price), receiptMoney(i.Qty*i.Price)))
+		add(fmt.Sprintf("%g %s x %s = %s", i.Qty, cleanReceipt(i.Unit), receiptMoney(i.Price), receiptMoney(i.Qty*i.Price)))
 	}
 	add(strings.Repeat("-", width))
 	add("TOTAL: " + receiptMoney(s.Total))

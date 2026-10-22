@@ -28,7 +28,7 @@ win.fetch = async (url, options = {}) => {
 };
 
 (async () => {
-  win.eval(fs.readFileSync(path.join(root, 'web/app.js'), 'utf8'));
+  win.eval(fs.readFileSync(path.join(root, 'web/camera.js'), 'utf8'));win.eval(fs.readFileSync(path.join(root, 'web/app.js'), 'utf8'));
   for (let i = 0; i < 50 && !win.document.getElementById('cloudLogin'); i++) await new Promise(r => setTimeout(r, 10));
   assert.ok(win.document.getElementById('cloudLogin'), 'unauthenticated cloud visit should show login');
   assert.match(win.document.body.textContent, /Cada empresa tem login e dados separados/);

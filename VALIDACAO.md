@@ -1,32 +1,85 @@
-# Validação da entrega
+# Validação — KL Portal 2.3
 
-Verificação concluída em 20/10/2026, antes da publicação no Render.
+Validação original em 20/10/2026; atualização do mercado validada em 21/10/2026. Esta é uma atualização de código; não foi publicada automaticamente no serviço do usuário.
 
-| Verificação | Resultado |
+| Camada | Resultado |
 |---|---|
-| Beauty: testes de domínio, autenticação, segurança e API com PGlite | 69 testes aprovados |
-| Beauty: TypeScript e compilação Vite com base `/beauty/` | Aprovados |
-| Portal: roteamento, redirecionamentos, encaminhamento HTTP, arquivos e health check | 9 testes aprovados, incluindo o agrupador |
-| KLSistemas: testes Go de autenticação, empresas, limite de login e impressão | 7 testes aprovados |
-| KLSistemas: compilação Linux | Binário gerado |
-| KLSistemas: interface multiempresa em JSDOM | Fluxo de login/cadastro aprovado com API simulada |
-| KLSistemas: fluxos DOM com API local real | 61 verificações aprovadas |
+| KL Beauty — domínio, segurança, autenticação, API e persistência | 69 testes aprovados |
+| Superadmin — migração, isolamento, contratos, usuários, mensalidades e auditoria | 27 testes aprovados |
+| Gateway — caminhos, redirecionamentos, arquivos, health check e superadmin | 10 testes aprovados |
+| KLSistemas — autenticação, empresas, limites e impressão | 8 testes Go aprovados |
+| Conjunto Node + Go com banco PGlite por protocolo PostgreSQL | 34 verificações HTTP aprovadas |
+| Interface superadmin em JSDOM com API do conjunto e banco de teste | 21 verificações aprovadas |
+| TypeScript / Vite e binário Linux do KLSistemas | Compilação aprovada |
 
-O teste DOM cobre produtos, vendas, estoque, fiado e recebimentos parciais, fornecedores, notas/XML, custos, contas, cancelamentos, exportações, concorrência e CSRF. O adaptador de teste remove `/mercado` porque conversa diretamente com o servidor Go; o gateway é testado separadamente.
+As contagens Node incluem os testes agrupadores apresentados pelo runner. As verificações HTTP/DOM são asserções de fluxos, não auditorias independentes.
 
-Limites: não foi construída/executada a imagem Docker neste ambiente; não foi realizado deploy no Render, teste de carga, revisão visual em navegador real ou teste integrado dos dois aplicativos com PostgreSQL remoto. Os testes Go de nuvem não substituem essa validação real. A migração de dados existentes não foi executada. Impressão nativa Windows não foi testada nesta entrega.
+## O que foi exercitado
 
-A revisão e os testes reduzem riscos, mas não garantem ausência de bugs. Não houve 100 revisões de cada linha, e essa contagem não seria uma garantia de qualidade. Faça a conferência pós-publicação descrita no guia antes de operar com dados reais.
+- Migração sobre empresas existentes sem perda de estado e sem bloqueio financeiro inicial.
+- Isolamento entre empresas, credencial de cliente sem acesso ao superadmin e proteção de origem.
+- Criação atômica de empresa/usuário; rollback em login duplicado.
+- Geração idempotente por competência e preservação do dia de vencimento em meses curtos.
+- Recebimento parcial, repetição de requisição sem duplicação, recusa de valores excedentes e negativos.
+- Quitação, liberação automática, estorno, reabertura de saldo e cancelamento de mensalidade.
+- Exclusão restaurável: exige contrato cancelado, confirmação pelo nome exato, bloqueia acesso, preserva dados/histórico e restaura mantendo contrato cancelado.
+- Cancelamento manual que permanece bloqueado mesmo após pagamento.
+- Bloqueio de sessão já aberta nos dois sistemas.
+- Perfil consulta do mercado impedido de gravar no servidor.
+- Criação, vínculo, desativação e troca de senha de usuários; revogação de sessões.
+- Auditoria sem senhas e controle de versão do contrato para recusar tela desatualizada.
+- Formulários do painel: autenticação, empresa, usuário, recebimento, estorno, cancelamento, exclusão/restauração, filtro e histórico.
 
-## Reproduzir testes adicionais da interface do mercado
+## Limites da validação
 
-Além dos comandos do guia, com Node e Go instalados, na pasta `mercado`:
+PGlite executa o motor PostgreSQL em WebAssembly; a suíte integrada utiliza seu adaptador de socket com os clientes Node pg e Go pgx. Isso valida as consultas e os fluxos locais, mas não reproduz todas as condições de concorrência, falhas de rede, recursos e configuração de um PostgreSQL remoto.
+
+Não houve teste de carga, auditoria externa de segurança, execução da imagem Docker v2, inspeção visual em navegador real ou publicação desta atualização no Render. JSDOM verifica comportamento de formulários, não aparência rasterizada. Não foram acessados dados de produção.
+
+Não há garantia de ausência de bugs nem alegação de 100 revisões por linha. Faça backup e valide a instalação após publicar conforme ATUALIZAR_PARA_V2.md.
+
+## Reproduzir testes básicos
+
+Pré-requisitos: Node 24 e Go compatível com mercado/go.mod. Na raiz do pacote:
 
 ```bash
-npm install --no-save --package-lock=false jsdom@30.1.3
-go build -o klsistemas-test .
-node tests/multitenant-ui.cjs
-node tests/dom-integration.cjs
+cd beauty
+npm ci --include=dev
+npm run build
+npm test
+cd ..
+npm run test:admin
+npm run test:gateway
+cd mercado
+go test ./...
+go build -buildvcs=false -o ../bin/klsistemas .
+cd ..
 ```
 
-Esses comandos são para ambiente Linux/macOS de desenvolvimento. O teste local inicia a porta 18763 e grava somente numa pasta temporária. Não o execute apontando para o banco de produção. JSDOM verifica comportamento da interface, mas não sua aparência renderizada.
+## Reproduzir integração e interface
+
+Em Linux, após os comandos acima:
+
+```bash
+cd qa
+npm ci
+npm test
+```
+
+A suíte sobe um banco descartável em memória no socket local 15439 e uma instância de teste do portal na porta 18090; o Go usa a porta 10001. As portas precisam estar livres. Os dados e senhas presentes nos testes são exclusivamente fictícios. A conexão é sobrescrita para o banco local, e nenhum DATABASE_URL de produção é usado pela suíte integrada.
+
+O diretório qa não entra na imagem de produção. Para publicação no Render, não é necessário instalar essas dependências manualmente.
+
+## Adições da atualização de mercado (21/10/2026)
+
+- 62 verificações do mercado no conjunto com banco de teste: cadastro sem código, atalho exclusivo, busca ambígua, KG/gramas, multiplicadores, limites, total, persistência, nota, perda, cancelamento e leitura única da câmera.
+- 61 verificações de regressão do mercado com API local real: venda, fiado, entrada XML, estoque, caixa, exportação, impressão e telas.
+- Decodificador incluído validado com imagens sintéticas EAN-13 e EAN-8.
+- Permissões e encerramento da câmera validados por simulação. Não houve teste com sensor físico de Android/iPhone.
+- O build Linux do Go incorpora camera.js e o decodificador. A biblioteca acompanha o pacote; nenhuma chave externa é necessária.
+
+A suíte atual inclui `qa/market-dom.cjs`. As contagens da tabela principal para Beauty e superadmin registram a validação anterior; essas partes não foram alteradas nesta atualização.
+
+## Consolidação 2.3
+
+Inclui toda a atualização anterior e: atalho com abertura automática em 450 ms (ou Enter), categoria em lista visível e independente da unidade, categoria personalizada, seleção explícita entre venda por unidade ou peso, multiplicador x, câmera no cadastro preservando formulário e leitura direta para sacola na venda por unidade. O teste de mercado cobre também 3x antes da câmera, código desconhecido, produto por KG exigindo peso e cancelamento da câmera sem perda do cadastro.

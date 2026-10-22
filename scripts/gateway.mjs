@@ -1,10 +1,11 @@
 import {request as httpRequest} from 'node:http';
-export function makePortal({beauty,pool,portal,marketPort,host}){return async(req,res)=>{
+export function makePortal({beauty,pool,portal,marketPort,host,admin}){return async(req,res)=>{
  const url=new URL(req.url,'http://local');
  const fail=(status,msg)=>{if(res.headersSent){res.end();return}res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({error:msg}))};
  if(url.pathname==='/healthz'){try{await pool.query('SELECT 1');const r=await fetch(`http://127.0.0.1:${marketPort}/health`,{signal:AbortSignal.timeout(2000)});if(!r.ok)throw Error();res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({status:'ok',beauty:'ok',mercado:'ok'}))}catch{fail(503,'Um dos sistemas não está disponível.')}return}
  if(host&&req.headers.host!==host)return fail(403,'Host inválido. Confira APP_URL.');
- if(url.pathname==='/beauty'||url.pathname==='/mercado'){res.writeHead(308,{Location:url.pathname+'/'+url.search});res.end();return}
+ if(url.pathname==='/beauty'||url.pathname==='/mercado'||url.pathname==='/admin'){res.writeHead(308,{Location:url.pathname+'/'+url.search});res.end();return}
+ if(admin&&url.pathname.startsWith('/admin/'))return admin(req,res);
  if(url.pathname.startsWith('/beauty/')){req.url=req.url.slice('/beauty'.length);return beauty(req,res)}
  if(url.pathname.startsWith('/mercado/')){
  const headers={...req.headers};delete headers.connection;delete headers['transfer-encoding'];

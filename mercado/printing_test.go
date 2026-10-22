@@ -72,3 +72,11 @@ func TestPrintQueueDuplicateAndFailure(t *testing.T) {
 		t.Fatal("sale modified")
 	}
 }
+
+func TestWeightedReceipt(t *testing.T) {
+	s := receiptSale{ID: 2, Items: []receiptItem{{Name: "Mussarela", Unit: "KG", Qty: 0.125, Price: 19.99}}, Total: 2.50, Payment: "Pix"}
+	text := strings.Join(receiptLines(s, receiptSettings{}), "\n")
+	if !strings.Contains(text, "0.125 KG x R$ 19,99 = R$ 2,50") {
+		t.Fatal(text)
+	}
+}

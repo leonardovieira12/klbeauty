@@ -1,1 +1,14 @@
-{"name":"kl-portal-render","version":"1.0.0","private":true,"type":"module","engines":{"node":">=24 <25"},"scripts":{"start":"node --env-file-if-exists=.env server.mjs","test:gateway":"node --test tests/gateway.test.mjs"}}
+{
+  "name": "kl-portal-render",
+  "version": "2.3.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "test:gateway": "node --test tests/gateway.test.mjs",
+    "test:admin": "node --test tests/admin.test.mjs"
+  }
+}

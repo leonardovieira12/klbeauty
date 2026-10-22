@@ -41,6 +41,7 @@ var createCloudTenant = postgresCreateTenant
 var updateCloudPassword = postgresUpdatePassword
 
 type cloudSession struct {
+	AuthVersion     int
 	UserID          string
 	CompanyID       string
 	CompanyName     string
@@ -49,6 +50,7 @@ type cloudSession struct {
 }
 
 type cloudUser struct {
+	AuthVersion                                                         int
 	ID, Username, PasswordHash, CompanyID, CompanyName, CompanyDocument string
 }
 
@@ -82,7 +84,9 @@ func initCloud() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	poolConfig, configErr := pgxpool.ParseConfig(dbURL)
-	if configErr != nil { return fmt.Errorf("DATABASE_URL inválida") }
+	if configErr != nil {
+		return fmt.Errorf("DATABASE_URL inválida")
+	}
 	poolConfig.MaxConns = 5
 	cloudDB, e = pgxpool.NewWithConfig(ctx, poolConfig)
 	if e != nil {
@@ -213,6 +217,9 @@ func postgresWrite(ctx context.Context, companyID string, raw json.RawMessage, e
 func postgresFindUser(ctx context.Context, username string) (cloudUser, error) {
 	var u cloudUser
 	e := cloudDB.QueryRow(ctx, `SELECT u.id,u.username,u.password_hash,m.company_id,c.name,c.document FROM kls_users u JOIN kls_memberships m ON m.user_id=u.id JOIN kls_companies c ON c.id=m.company_id WHERE u.username=$1 ORDER BY m.company_id LIMIT 1`, username).Scan(&u.ID, &u.Username, &u.PasswordHash, &u.CompanyID, &u.CompanyName, &u.CompanyDocument)
+	if e == nil && os.Getenv("KLS_MANAGED") == "1" {
+		e = cloudDB.QueryRow(ctx, `SELECT auth_version FROM kls_users WHERE id=$1 AND active=true`, u.ID).Scan(&u.AuthVersion)
+	}
 	return u, e
 }
 
@@ -290,6 +297,9 @@ func cloudAuthenticated(w http.ResponseWriter, r *http.Request) (cloudSession, b
 		fail(w, 403, "Origem inválida")
 		return cloudSession{}, false
 	}
+	if !checkManaged(w, r, s) {
+		return cloudSession{}, false
+	}
 	return s, true
 }
 
@@ -324,7 +334,7 @@ func newCloudSession(w http.ResponseWriter, user cloudUser) {
 			delete(sessions, k)
 		}
 	}
-	sessions[session] = cloudSession{UserID: user.ID, CompanyID: user.CompanyID, CompanyName: user.CompanyName, CompanyDocument: user.CompanyDocument, Expires: expiry}
+	sessions[session] = cloudSession{AuthVersion: user.AuthVersion, UserID: user.ID, CompanyID: user.CompanyID, CompanyName: user.CompanyName, CompanyDocument: user.CompanyDocument, Expires: expiry}
 	sessionsMu.Unlock()
 	http.SetCookie(w, &http.Cookie{Name: "kls_session", Value: session, Path: "/mercado", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode, MaxAge: 43200, Expires: expiry})
 }
@@ -370,6 +380,12 @@ func loginAPI(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if os.Getenv("KLS_MANAGED") == "1" {
+		if _, e := managedPermission(r.Context(), cloudSession{UserID: u.ID, CompanyID: u.CompanyID, AuthVersion: u.AuthVersion}); e != nil {
+			fail(w, 403, e.Error())
+			return
+		}
+	}
 	newCloudSession(w, u)
 	reply(w, 200, map[string]any{"ok": true, "company": map[string]string{"id": u.CompanyID, "name": u.CompanyName, "document": u.CompanyDocument}})
 }
@@ -377,6 +393,10 @@ func loginAPI(w http.ResponseWriter, r *http.Request) {
 var usernamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9._@+-]{2,119}$`)
 
 func registerAPI(w http.ResponseWriter, r *http.Request) {
+	if os.Getenv("KLS_MANAGED") == "1" {
+		fail(w, 403, "Cadastro de empresas disponível somente no superadmin.")
+		return
+	}
 	if !cloudMode || r.Method != "POST" {
 		fail(w, 404, "Indisponível")
 		return

@@ -10,7 +10,7 @@ WORKDIR /src
 COPY beauty/package*.json ./
 RUN npm ci --include=dev
 COPY beauty/ ./
-RUN npm run build
+RUN npm run build && npm test
 
 FROM node:24-bookworm-slim
 ENV NODE_ENV=production
@@ -24,6 +24,7 @@ COPY beauty/lib ./beauty/lib
 COPY beauty/scripts ./beauty/scripts
 COPY package.json server.mjs portal.html ./
 COPY scripts ./scripts
+COPY admin ./admin
 USER node
 EXPOSE 10000
 CMD ["npm","start"]
